@@ -105,8 +105,10 @@ THREE.LeapMotion.Frame.prototype = {
 };
 
 THREE.LeapMotion.Palm = function ( palmNormal, palmPosition, palmVelocity, stabilizedPalmPosition ) {
+
+	this.normal				= THREE.LeapMotion.array3ToVector3( palmNormal );
+	this.roll               = (180 + palmNormal[1] * 180) * (Math.PI/180);
 	
-	this.normal             = THREE.LeapMotion.array3ToVector3( palmNormal );
 	this.position           = THREE.LeapMotion.array3ToVector3( palmPosition );
 	this.stabalizedPosition = THREE.LeapMotion.array3ToVector3( stabilizedPalmPosition );
 	this.velocity           = THREE.LeapMotion.array3ToVector3( palmVelocity );
@@ -151,6 +153,8 @@ THREE.LeapMotion.Hand = function (hand) {
 	this.sphereRadius = hand.sphereRadius;
 	this.timeVisible  = hand.timeVisible;
 	
+	this.direction    = THREE.LeapMotion.array3ToVector3( hand.direction );
+	
 	this.palm         = new THREE.LeapMotion.Palm(
 							hand.palmNormal,
 							hand.palmPosition,
@@ -161,6 +165,12 @@ THREE.LeapMotion.Hand = function (hand) {
 };
 
 THREE.LeapMotion.Hand.prototype = {
+	
+	isUpsideDown: function () {
+		
+		return this.palm.roll > 5.4;
+		
+	},
 	
 	isClosed: function () {
 	
