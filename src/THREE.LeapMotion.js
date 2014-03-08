@@ -12,12 +12,18 @@ THREE.LeapMotion = function () {
 
 THREE.LeapMotion.prototype = {
 
+	setOnCursorPosition: function ( callback ) {
+	
+		this.onCursorPosition = callback;
+		
+	},
+
 	handleLoop: function ( frame ) {
 		
 		if (frame.valid && !this.isPaused) {
 
-			var currentFrame = new THREE.LeapMotion.Frame( frame );
-			
+			var currentFrame = new THREE.LeapMotion.Frame( frame, this );
+
 			this.handleFrame( currentFrame );
 			
 		}
@@ -36,8 +42,10 @@ THREE.LeapMotion.array3ToVector3 = function ( array ) {
 	
 };
 
-THREE.LeapMotion.Frame = function ( frame ) {
+THREE.LeapMotion.Frame = function ( frame, leap ) {
 
+	this.leap = leap;
+	
 	this.hands = [];
 	
 	while ( frame.hands.length ) {
@@ -48,9 +56,39 @@ THREE.LeapMotion.Frame = function ( frame ) {
 		
 	}
 	
+	// Cursor event delegation
+	if ( this.isCursorMode() && this.leap.onCursorPosition ) {
+		
+        var position = {
+            x: Math.round(this.getCursor().stabalizedPosition.x),
+            y: Math.round(this.getCursor().stabalizedPosition.y)
+        };
+		
+		this.leap.onCursorPosition ( position );
+		
+	}
+	
 };
 
 THREE.LeapMotion.Frame.prototype = {
+	
+	isCursorMode: function () {
+	
+		return ( this.hasOneHandVisible() && this.getDominantHand().hasOneFinger() );
+		
+	},
+	
+	getCursor: function () {
+	
+		return this.getDominantHand().fingers[0].tip;
+		
+	},
+	
+	getDominantHand: function () {
+	
+		return this.hands[0];
+		
+	},
 
 	hasHandsVisible: function () {
 		
@@ -107,7 +145,6 @@ THREE.LeapMotion.Frame.prototype = {
 THREE.LeapMotion.Palm = function ( palmNormal, palmPosition, palmVelocity, stabilizedPalmPosition ) {
 
 	this.normal				= THREE.LeapMotion.array3ToVector3( palmNormal );
-	this.roll               = (180 + palmNormal[1] * 180) * (Math.PI/180);
 	
 	this.position           = THREE.LeapMotion.array3ToVector3( palmPosition );
 	this.stabalizedPosition = THREE.LeapMotion.array3ToVector3( stabilizedPalmPosition );
@@ -147,6 +184,10 @@ THREE.LeapMotion.Tip = function ( position, stabalizedPosition, velocity ) {
 		  
 THREE.LeapMotion.Hand = function (hand) {
 	
+	this.roll         = (180 + hand.palmNormal[1] * 180) * (Math.PI/180);
+	this.pitch        = (hand.direction[1] * 180) * (Math.PI/180);
+	this.yaw          = (180 + (hand.palmNormal[0]) * 180) * (Math.PI/180);
+	
 	this.fingers      = this.processFingers(hand.fingers);
 	
 	this.sphereCenter = THREE.LeapMotion.array3ToVector3( hand.sphereCenter );
@@ -166,15 +207,27 @@ THREE.LeapMotion.Hand = function (hand) {
 
 THREE.LeapMotion.Hand.prototype = {
 	
+	hasOneFinger: function () {
+		
+		return ( this.fingers.length == 1 );
+		
+	},
+	
+	isPushing: function () {
+		
+		return ( this.pitch > 2.4 );
+		
+	},
+	
 	isUpsideDown: function () {
 		
-		return this.palm.roll > 5.4;
+		return this.roll > 5.4;
 		
 	},
 	
 	isClosed: function () {
-	
-		return ( this.fingers.length == 0 );
+		
+		return ( this.fingers.length == 0  && ( this.roll > 5.4 || this.roll < 1 ) );
 		
 	},
 	
