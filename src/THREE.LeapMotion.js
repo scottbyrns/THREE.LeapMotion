@@ -1,3 +1,4 @@
+
 THREE.LeapMotion = function () {
 
 	Leap.loop(this.handleLoop.bind(this));
@@ -7,7 +8,23 @@ THREE.LeapMotion = function () {
 	this.handleFrame = function (frame) {
 		// NOP - Implementer must override;
 	};
+	
+	this.eventHandlers = {};
+	
+	for ( var event in THREE.LeapMotion.Events ) {
+		
+		this.eventHandlers[THREE.LeapMotion.Events[event]] = [];
+		
+	}
 
+};
+
+THREE.LeapMotion.Events = {
+	
+	HAND_CLOSED: 0,
+	HAND_UPDSIDE_DOWN: 1,
+	HAND_PUSHING_SCREEN: 2
+	
 };
 
 THREE.LeapMotion.prototype = {
@@ -15,6 +32,36 @@ THREE.LeapMotion.prototype = {
 	setOnCursorPosition: function ( callback ) {
 	
 		this.onCursorPosition = callback;
+		
+	},
+	
+	dispatchEvents: function ( frame ) {
+	
+		for ( var event in THREE.LeapMotion.Events ) {
+			
+			if ( !frame.hasHandsVisible() ) {
+				continue;
+			}
+			
+			if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_CLOSED && !frame.containsClosedHand()) {
+				continue;
+			}
+			else if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_UPDSIDE_DOWN && !frame.containsUpSideDownHand()) {
+				continue;
+			}
+			else if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_PUSHING_SCREEN && !frame.containsHandPushingScreen()) {
+				continue;
+			}
+
+			var handlers = this.eventHandlers[THREE.LeapMotion.Events[event]];
+			
+			for (var i = 0; i < handlers.length; i += 1) {
+				
+				handlers[i]( frame );
+				
+			}
+			
+		}
 		
 	},
 
@@ -25,8 +72,22 @@ THREE.LeapMotion.prototype = {
 			var currentFrame = new THREE.LeapMotion.Frame( frame, this );
 
 			this.handleFrame( currentFrame );
+			this.dispatchEvents( currentFrame );
 			
 		}
+		
+	},
+	
+	registerEventHandler: function (event, handler) {
+
+		this.eventHandlers[event].push(handler);
+		
+	},
+	
+	unregisterEventHandler: function (event, handler) {
+		
+		var handlerPosition = this.eventHandlers[event].indexOf(handler);
+		this.eventHandlers[event].splice(handlerPosition, 1);
 		
 	}
 
@@ -56,7 +117,6 @@ THREE.LeapMotion.Frame = function ( frame, leap ) {
 		
 	}
 	
-	// Cursor event delegation
 	if ( this.isCursorMode() && this.leap.onCursorPosition ) {
 		
         var position = {
@@ -138,6 +198,48 @@ THREE.LeapMotion.Frame.prototype = {
 			
 		}
 		
+	},
+	
+	containsClosedHand: function () {
+		
+		for ( var i = 0, len = this.hands.length; i < len; i += 1 ) {
+			
+			if (this.hands[i].isClosed()) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+		
+	},
+	
+	containsUpSideDownHand: function () {
+		
+		for ( var i = 0, len = this.hands.length; i < len; i += 1 ) {
+			
+			if ( this.hands[i].isUpsideDown() ) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+		
+	},
+	
+	containsHandPushingScreen: function () {
+		
+		for ( var i = 0, len = this.hands.length; i < len; i += 1 ) {
+			
+			if ( this.hands[i].isPushing() ) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+		
 	}
 	
 };
@@ -145,6 +247,9 @@ THREE.LeapMotion.Frame.prototype = {
 THREE.LeapMotion.Palm = function ( palmNormal, palmPosition, palmVelocity, stabilizedPalmPosition ) {
 
 	this.normal				= THREE.LeapMotion.array3ToVector3( palmNormal );
+	// this.pitch              = (palmNormal[0] * 180) * (Math.PI/180);
+	// this.yaw                = (180 + (palmNormal[0] * 180/Math.PI))// * (Math.PI/180);
+	// this.roll               = (180 + palmNormal[1] * 180) * (Math.PI/180);
 	
 	this.position           = THREE.LeapMotion.array3ToVector3( palmPosition );
 	this.stabalizedPosition = THREE.LeapMotion.array3ToVector3( stabilizedPalmPosition );
