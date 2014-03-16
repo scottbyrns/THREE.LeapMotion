@@ -64,7 +64,7 @@
 			// the segmentsWidth, and the third argument is the segmentsHeight.  Increasing the 
 			// segmentsWidth and segmentsHeight will yield a more perfect circle, but will degrade
 			// rendering performance
-			var sphere = new THREE.Mesh(new THREE.SphereGeometry(150, 100, 100), new THREE.MeshNormalMaterial());
+			var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
 			sphere.overdraw = true;
 			// scene.add(sphere);
 
@@ -152,7 +152,14 @@
 			leap.handleFrame = function ( frame ) {
 
 				if ( frame.hasHandsVisible() ) {
-					sphere.position = frame.getDominantHand().palm.position;//.multiplyScalar( camera.position.z/500 );
+					if (frame.isCursorMode()) {
+						frame.getDominantHand().fingers[0].tip.position.y -= 50;
+						sphere.position = frame.getDominantHand().fingers[0].tip.position;
+					}
+					else {
+						frame.getDominantHand().palm.position.y -= 50;
+						sphere.position = frame.getDominantHand().palm.position;//.multiplyScalar( camera.position.z/500 );
+					}
 				}
 
 
