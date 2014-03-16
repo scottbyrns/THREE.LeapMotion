@@ -23,7 +23,8 @@ THREE.LeapMotion.Events = {
 	
 	HAND_CLOSED: 0,
 	HAND_UPDSIDE_DOWN: 1,
-	HAND_PUSHING_SCREEN: 2
+	HAND_PUSHING_SCREEN: 2,
+	NOTHING_TO_TRACK: 3,
 	
 };
 
@@ -39,17 +40,16 @@ THREE.LeapMotion.prototype = {
 	
 		for ( var event in THREE.LeapMotion.Events ) {
 			
-			if ( !frame.hasHandsVisible() ) {
+			if ( THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.NOTHING_TO_TRACK && frame.hasHandsVisible() ) {
 				continue;
 			}
-			
-			if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_CLOSED && !frame.containsClosedHand()) {
+			else if ( THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_CLOSED && !frame.containsClosedHand() ) {
 				continue;
 			}
-			else if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_UPDSIDE_DOWN && !frame.containsUpSideDownHand()) {
+			else if ( THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_UPDSIDE_DOWN && !frame.containsUpSideDownHand() ) {
 				continue;
 			}
-			else if (THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_PUSHING_SCREEN && !frame.containsHandPushingScreen()) {
+			else if ( THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_PUSHING_SCREEN && !frame.containsHandPushingScreen() ) {
 				continue;
 			}
 

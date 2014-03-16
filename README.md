@@ -3,6 +3,12 @@ THREE.LeapMotion
 
 Interface adapter for the LeapMotion to make it easier to work with inside of THREE.JS
 
+### Events
+* NOTHING_TO_TRACK
+* HAND_CLOSED
+* HAND_UPSIDE_DOWN
+* HAND_PUSHING_SCREEN
+
 
 ```javascript
 
