@@ -70,7 +70,7 @@ THREE.LeapMotion.prototype = {
 			if ( this.hasHandPushingScreen == true && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN ) {
 				continue;
 			}
-			else if ( this.hasHandPushingScreen == false && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN && frame.containsHandPushingScreen() ) {
+			else if ( this.hasTrackableObjectInView == true && this.hasHandPushingScreen == false && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN && frame.containsHandPushingScreen() ) {
 				this.hasHandPushingScreen = true;
 			}
 			else if ( this.hasHandPushingScreen == false && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN && !frame.containsHandPushingScreen() ) {
@@ -79,7 +79,7 @@ THREE.LeapMotion.prototype = {
 			else if ( this.hasHandPushingScreen == false && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STOPPED_PUSHING_SCREEN ) {
 				continue;
 			}
-			else if ( this.hasHandPushingScreen == true && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STOPPED_PUSHING_SCREEN && !frame.containsHandPushingScreen() ) {
+			else if ( this.hasTrackableObjectInView == true && this.hasHandPushingScreen == true && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STOPPED_PUSHING_SCREEN && !frame.containsHandPushingScreen() ) {
 				this.hasHandPushingScreen = false;
 			}
 			else if ( this.hasHandPushingScreen == true && THREE.LeapMotion.Events[event] == THREE.LeapMotion.Events.HAND_STOPPED_PUSHING_SCREEN && frame.containsHandPushingScreen() ) {

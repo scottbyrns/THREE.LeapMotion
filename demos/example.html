@@ -54,7 +54,7 @@
 
 			// camera
 			var camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000);
-			camera.position.z = 1000;
+			camera.position.z = 500;
 
 			// scene
 			var scene = new THREE.Scene();
@@ -139,7 +139,12 @@
 			leap.registerEventHandler(
 				THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN,
 				function ( frame ) {
-					document.getElementById("menu").style.display = "block";
+					if (document.getElementById("menu").style.display == "block") {
+						document.getElementById("menu").style.display = "none";
+					}
+					else {
+						document.getElementById("menu").style.display = "block";
+					}
 				}
 			);
 
@@ -147,7 +152,7 @@
 			leap.handleFrame = function ( frame ) {
 
 				if ( frame.hasHandsVisible() ) {
-					sphere.position = frame.getDominantHand().palm.position.multiplyScalar( camera.position.z/500 );
+					sphere.position = frame.getDominantHand().palm.position;//.multiplyScalar( camera.position.z/500 );
 				}
 
 
