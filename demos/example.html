@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>THREE.LeapMotion</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+				color:#FFF;
+			}
+			
+			#menu {
+				
+				position:absolute;
+				top: 15%;
+				bottom: 15%;
+				left: 15%;
+				right: 15%;
+				
+				display:none;
+				background:#333;
+				border-radius:100px;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="menu">
+			
+			<ul>
+				
+				<li> Item 1 </li>
+				<li> Item 2 </li>
+				<li> Item 3 </li>
+				
+			</ul>
+			
+		</div>
+
+		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
+		<script src="//js.leapmotion.com/leap-0.4.1.js"></script>
+		<script src="../src/THREE.LeapMotion.js"></script>
+		<script>
+
+			// renderer
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			// camera
+			var camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000);
+			camera.position.z = 1000;
+
+			// scene
+			var scene = new THREE.Scene();
+
+			// sphere
+			// the first argument of THREE.SphereGeometry is the radius, the second argument is
+			// the segmentsWidth, and the third argument is the segmentsHeight.  Increasing the 
+			// segmentsWidth and segmentsHeight will yield a more perfect circle, but will degrade
+			// rendering performance
+			var sphere = new THREE.Mesh(new THREE.SphereGeometry(150, 100, 100), new THREE.MeshNormalMaterial());
+			sphere.overdraw = true;
+			// scene.add(sphere);
+
+			renderer.render(scene, camera);
+
+
+			var leap = new THREE.LeapMotion();
+
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_CLOSED,
+				function ( frame ) {
+					if (document.getElementById("menu").style.display == "block") {
+						document.getElementById("menu").style.display = "none";
+					}
+				}
+			);
+			
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_OPEN,
+				function ( frame ) {
+					sphere.scale.x = 0.75;
+					sphere.scale.y = 0.75;
+					sphere.scale.z = 0.75;
+				}
+			);
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_UPDSIDE_DOWN,
+				function ( frame ) {
+					sphere.rotateY(frame.getDominantHand().roll);
+				}
+			);
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_PUSHING_SCREEN,
+				function ( frame ) {
+					sphere.scale.x = 1.0;
+					sphere.scale.y = 1.0;
+					sphere.scale.z = 1.0;
+				}
+			);
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.NOTHING_TO_TRACK,
+				function ( frame ) {
+
+				}
+			);
+			
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.TRACKABLE_OBJECT_CAME_INTO_VIEW,
+				function ( frame ) {
+					scene.add(sphere);
+				}
+			);
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.TRACKABLE_OBJECT_LEFT_VIEW,
+				function ( frame ) {
+					scene.remove(sphere);
+				}
+			);
+			
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_STOPPED_PUSHING_SCREEN,
+				function ( frame ) {
+
+				}
+			);
+
+			leap.registerEventHandler(
+				THREE.LeapMotion.Events.HAND_STARTED_PUSHING_SCREEN,
+				function ( frame ) {
+					document.getElementById("menu").style.display = "block";
+				}
+			);
+
+
+			leap.handleFrame = function ( frame ) {
+
+				if ( frame.hasHandsVisible() ) {
+					sphere.position = frame.getDominantHand().palm.position.multiplyScalar( camera.position.z/500 );
+				}
+
+
+				renderer.render(scene, camera);
+
+
+			};
+
+		  
+		</script>
+		
+		
+
+	</body>
+</html>
